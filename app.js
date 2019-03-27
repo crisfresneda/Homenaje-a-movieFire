@@ -1,5 +1,5 @@
 const moviesRef = firebase.database().ref("movies");
-const apiKey = "token";
+const apiKey = "tu token";
 
 // moviesRef.set(["hola",14 ,"fin"]);
 
@@ -47,14 +47,19 @@ function getMovieData (title) {
     return fetch(url).then(res => res.json())
 }
 
+function showDetails(data) {
+    detailsSelector.style.display = "block";
+    detailsSelector.innerHTML = `<pre><code>${JSON.stringify(data, null, 4)}</code></pre>`
+}
+
 
 
 const filmSelector = document.getElementById('movies');
 const titleSelector = document.getElementById('title');
+const detailsSelector = document.getElementById('details');
 
 
-
-//Eventos 
+// Eventos 
 moviesRef.on("value", data => {
     const filmData = data.val()
     console.log("data: ", filmData)
@@ -64,13 +69,45 @@ moviesRef.on("value", data => {
     for( const key in filmData){
         if(filmData.hasOwnProperty(key)) {
             const element = filmData[key];
-            htmlFinal += `<li>${element.Title}</li>`
+            htmlFinal += `<li data-id="${key}">
+                            ${element.Title}
+                            <button data-action="details">Detalles</button>
+                            <button data-action="edit">Editar</button>
+                            <button data-action="delete">Borrar</button>
+                          </li>`
             
         }
     }
     filmSelector.innerHTML = htmlFinal;
 })
 
+filmSelector.addEventListener("click", event => {
+    const target = event.target;
+    if(target.nodeName === "BUTTON" ) {
+        const action = target.dataset.action;
+        const id = target.parentNode.dataset.id;
+        // console.log(action);  
+        if(action === "details"){
+            getMovieDetails(id).then(showDetails)
+            console.log('details'); 
+        } else if( action === "edit"){
+            const newTitle = prompt("dime nuevo título").trim();
+            if (newTitle){
+                getMovieData(newTitle).then( moviewDetails => updateMovie(id, moviewDetails))
+
+                
+                
+            }
+        } else if (action === "delete"){
+            if( confirm("estás seguro?")){
+                deleteMovie(id)
+            }
+            
+            //console.log('delete'); 
+        }
+    }
+    
+})
 
 titleSelector.addEventListener("keyup", event => {
     const titleContent = titleSelector.value.trim();
