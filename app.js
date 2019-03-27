@@ -1,5 +1,5 @@
 const moviesRef = firebase.database().ref("movies");
-const apiKey = "<--TU TOKEN -->";
+const apiKey = "token";
 
 // moviesRef.set(["hola",14 ,"fin"]);
 
@@ -37,12 +37,7 @@ function getMovieDetails(id) {
        
 }
 
-function getMovies() {
-    // Listado de películas
-    return moviesRef.on("value", data => {
-        console.log("data: ", data.val())
-    })
-}
+
 
 
 //PETICIÓN AJAX
@@ -51,3 +46,37 @@ function getMovieData (title) {
     const url = `http://www.omdbapi.com/?t=${title}&apikey=${apiKey}`
     return fetch(url).then(res => res.json())
 }
+
+
+
+const filmSelector = document.getElementById('movies');
+const titleSelector = document.getElementById('title');
+
+
+
+//Eventos 
+moviesRef.on("value", data => {
+    const filmData = data.val()
+    console.log("data: ", filmData)
+
+    let htmlFinal = "";
+
+    for( const key in filmData){
+        if(filmData.hasOwnProperty(key)) {
+            const element = filmData[key];
+            htmlFinal += `<li>${element.Title}</li>`
+            
+        }
+    }
+    filmSelector.innerHTML = htmlFinal;
+})
+
+
+titleSelector.addEventListener("keyup", event => {
+    const titleContent = titleSelector.value.trim();
+    if(event.keyCode === 13 && titleContent){
+        console.log("ahora si", titleContent)
+        getMovieData(titleContent).then(addMovie)
+
+    }
+})
